@@ -200,6 +200,8 @@ final class AppState: ObservableObject {
             } else {
                 try TouchID.disable()
             }
+        } catch TouchIDError.blockedByPrivacy {
+            Alerts.touchIDBlocked()
         } catch SleepBlockerError.cancelled {
             // Prompt dismissed; leave things exactly as they were.
         } catch {

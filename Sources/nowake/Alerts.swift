@@ -119,6 +119,28 @@ enum Alerts {
         )
     }
 
+    /// The one failure the user can still fix themselves, so it hands over the
+    /// fix rather than only reporting the refusal.
+    static func touchIDBlocked() {
+        let alert = NSAlert()
+        alert.alertStyle = .warning
+        alert.messageText = "macOS won't let nowake write PAM configuration"
+        alert.informativeText = """
+            Editing PAM configuration is gated behind Full Disk Access, which nowake \
+            deliberately doesn't ask for — being root isn't enough on its own.
+
+            Run these two lines in Terminal, then flip the switch again:
+
+            \(TouchID.terminalCommands)
+            """
+        alert.addButton(withTitle: "Copy Commands")
+        alert.addButton(withTitle: "OK")
+        NSApp.activate(ignoringOtherApps: true)
+        guard alert.runModal() == .alertFirstButtonReturn else { return }
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(TouchID.terminalCommands, forType: .string)
+    }
+
     static func autoOffDeclined() {
         _ = run(
             style: .warning,

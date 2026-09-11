@@ -8,25 +8,37 @@ struct ContentView: View {
         // The panel is one pane of Liquid Glass. Everything inside it is the
         // content layer — grouped by a faint scrim, not by more glass — so the
         // only things that float above the surface are the controls.
-        GlassEffectContainer(spacing: 10) {
-            VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 0) {
                 header
+                separator
                 toggleRow
                 if let message = state.warning.message {
                     warningRow(message)
                         .transition(.opacity)
                 }
+                separator
                 settingsGroup
+                separator
                 statusGroup
-                if state.touchIDAvailable { touchIDRow }
+                separator
+                if state.touchIDAvailable {
+                    touchIDRow
+                    separator
+                }
                 passwordlessRow
+                separator
                 footer
             }
-            .padding(12)
-            .frame(width: 312)
-            .glassEffect(.regular, in: .rect(cornerRadius: 18, style: .continuous))
-        }
+        .frame(width: 312)
         .animation(.smooth(duration: 0.22), value: state.warning.message)
+    }
+
+    /// Full-bleed, like the hairlines in a system menu. `separatorColor` rather
+    /// than a hand-picked opacity, so it tracks the material in both themes.
+    private var separator: some View {
+        Rectangle()
+            .fill(Color(nsColor: .separatorColor))
+            .frame(height: 0.5)
     }
 
     // MARK: - Header
@@ -45,7 +57,8 @@ struct ContentView: View {
                     .foregroundStyle(.secondary)
             }
         }
-        .padding(.horizontal, 4)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
     }
 
     // MARK: - The switch
@@ -59,7 +72,10 @@ struct ContentView: View {
                 .font(.system(size: 14, weight: .medium))
                 .foregroundStyle(state.isActive ? Color.white : Color.secondary)
                 .frame(width: 32, height: 32)
-                .glassEffect(tileGlass, in: .rect(cornerRadius: 9, style: .continuous))
+                .background(
+                    state.isActive ? Color.accentColor : Color.primary.opacity(0.10),
+                    in: .rect(cornerRadius: 9, style: .continuous)
+                )
 
             VStack(alignment: .leading, spacing: 2) {
                 Text("Keep awake")
@@ -76,11 +92,6 @@ struct ContentView: View {
         }
         .contentGroup(tint: state.isActive ? Color.accentColor : nil)
         .animation(.easeInOut(duration: 0.2), value: state.isActive)
-    }
-
-    private var tileGlass: Glass {
-        let base = Glass.regular.interactive()
-        return state.isActive ? base.tint(Color.accentColor) : base
     }
 
     // MARK: - Warning
@@ -241,7 +252,8 @@ struct ContentView: View {
                 .controlSize(.small)
                 .font(.system(size: 11))
         }
-        .padding(.horizontal, 4)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 8)
     }
 }
 
@@ -255,13 +267,12 @@ private struct ContentGroup: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .padding(.horizontal, 12)
-            .padding(.vertical, 11)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 10)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(
-                (tint ?? Color.primary).opacity(tint == nil ? 0.05 : 0.16),
-                in: .rect(cornerRadius: 11, style: .continuous)
-            )
+            // Full-bleed like the highlighted block in a Focus menu — a rounded
+            // card here would put a second container inside the pane.
+            .background((tint ?? Color.clear).opacity(tint == nil ? 0 : 0.18))
     }
 }
 
