@@ -88,12 +88,33 @@ enum Alerts {
                 \(SudoersRule.grantDescription)
 
                 That grants exactly one command as root — the one that restores macOS's \
-                default sleep behaviour. Turning nowake on will still ask for your password.
+                default sleep behaviour. Turning nowake on will still ask you to authorize.
 
                 Without this, the auto-off timer and the battery cutoff can only raise a \
                 dialog and wait for you to come back.
                 """,
             primary: "Install Rule",
+            secondary: "Cancel"
+        )
+    }
+
+    /// - Returns: `true` if the user consents to enabling Touch ID for sudo.
+    static func confirmEnableTouchID() -> Bool {
+        run(
+            style: .informational,
+            title: "Use Touch ID instead of typing your password?",
+            body: """
+                This writes \(TouchID.pamPath):
+
+                \(TouchID.pamLine)
+
+                /etc/pam.d/sudo already includes that file, so sudo starts accepting your \
+                fingerprint everywhere — in nowake and in Terminal alike. Authorization is \
+                still required every single time; it just stops being a typed password.
+
+                Writing the file needs your password once, now.
+                """,
+            primary: "Enable Touch ID",
             secondary: "Cancel"
         )
     }
@@ -135,6 +156,8 @@ enum Alerts {
             detail = message
         case SleepBlockerError.didNotApply:
             detail = "pmset ran, but the system didn't report the new state."
+        case let localized as LocalizedError where localized.errorDescription != nil:
+            detail = localized.errorDescription!
         default:
             detail = String(describing: error)
         }

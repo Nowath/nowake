@@ -5,21 +5,28 @@ struct ContentView: View {
     @ObservedObject var state: AppState
 
     var body: some View {
-        // One container so the glass layers sample a shared backdrop and blend
-        // where they sit close together, rather than stacking independently.
+        // The panel is one pane of Liquid Glass. Everything inside it is the
+        // content layer — grouped by a faint scrim, not by more glass — so the
+        // only things that float above the surface are the controls.
         GlassEffectContainer(spacing: 10) {
             VStack(alignment: .leading, spacing: 10) {
                 header
-                toggleCard
-                if let message = state.warning.message { warningCard(message) }
-                settingsCard
-                statusCard
-                passwordlessCard
+                toggleRow
+                if let message = state.warning.message {
+                    warningRow(message)
+                        .transition(.opacity)
+                }
+                settingsGroup
+                statusGroup
+                if state.touchIDAvailable { touchIDRow }
+                passwordlessRow
                 footer
             }
             .padding(12)
+            .frame(width: 312)
+            .glassEffect(.regular, in: .rect(cornerRadius: 18, style: .continuous))
         }
-        .frame(width: 312)
+        .animation(.smooth(duration: 0.22), value: state.warning.message)
     }
 
     // MARK: - Header
@@ -43,16 +50,16 @@ struct ContentView: View {
 
     // MARK: - The switch
 
-    private var toggleCard: some View {
+    /// The icon tile is the one piece of glass that sits *on* the pane: it's a
+    /// control, so it belongs to the layer above the content, and `.interactive()`
+    /// gives it the press response that comes with that.
+    private var toggleRow: some View {
         HStack(spacing: 11) {
-            RoundedRectangle(cornerRadius: 9, style: .continuous)
-                .fill(state.isActive ? Color.accentColor : Color.secondary.opacity(0.18))
+            Image(systemName: "cup.and.saucer.fill")
+                .font(.system(size: 14, weight: .medium))
+                .foregroundStyle(state.isActive ? Color.white : Color.secondary)
                 .frame(width: 32, height: 32)
-                .overlay {
-                    Image(systemName: "cup.and.saucer.fill")
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle(state.isActive ? Color.white : Color.secondary)
-                }
+                .glassEffect(tileGlass, in: .rect(cornerRadius: 9, style: .continuous))
 
             VStack(alignment: .leading, spacing: 2) {
                 Text("Keep awake")
@@ -67,13 +74,18 @@ struct ContentView: View {
                 .toggleStyle(.switch)
                 .controlSize(.small)
         }
-        .glassCard(tint: state.isActive ? Color.accentColor.opacity(0.26) : nil)
+        .contentGroup(tint: state.isActive ? Color.accentColor : nil)
         .animation(.easeInOut(duration: 0.2), value: state.isActive)
+    }
+
+    private var tileGlass: Glass {
+        let base = Glass.regular.interactive()
+        return state.isActive ? base.tint(Color.accentColor) : base
     }
 
     // MARK: - Warning
 
-    private func warningCard(_ message: String) -> some View {
+    private func warningRow(_ message: String) -> some View {
         HStack(alignment: .top, spacing: 8) {
             Image(systemName: "exclamationmark.triangle.fill")
                 .font(.system(size: 11))
@@ -83,12 +95,12 @@ struct ContentView: View {
             Spacer(minLength: 0)
         }
         .foregroundStyle(Color.orange)
-        .glassCard(tint: Color.orange.opacity(0.24))
+        .contentGroup(tint: Color.orange)
     }
 
     // MARK: - Settings
 
-    private var settingsCard: some View {
+    private var settingsGroup: some View {
         VStack(spacing: 9) {
             HStack(spacing: 8) {
                 Text("Auto-off")
@@ -121,12 +133,12 @@ struct ContentView: View {
                 .disabled(!state.isActive || !state.power.hasBattery)
             }
         }
-        .glassCard()
+        .contentGroup()
     }
 
     // MARK: - Status
 
-    private var statusCard: some View {
+    private var statusGroup: some View {
         VStack(spacing: 8) {
             statusRow(
                 symbol: state.isLidClosed ? "laptopcomputer.slash" : "laptopcomputer",
@@ -135,7 +147,7 @@ struct ContentView: View {
             )
             statusRow(symbol: state.power.symbolName, label: "Power", value: state.power.summary)
         }
-        .glassCard()
+        .contentGroup()
     }
 
     private func statusRow(symbol: String, label: String, value: String) -> some View {
@@ -154,9 +166,40 @@ struct ContentView: View {
         }
     }
 
+    // MARK: - Touch ID
+
+    private var touchIDRow: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "touchid")
+                .font(.system(size: 12))
+                .foregroundStyle(state.touchIDEnabled ? Color.pink : Color.secondary)
+                .frame(width: 16)
+
+            VStack(alignment: .leading, spacing: 1) {
+                Text("Unlock with Touch ID")
+                    .font(.system(size: 12))
+                Text(state.touchIDEnabled ? "Authorize with your fingerprint"
+                                          : "Asks you to type your password")
+                    .font(.system(size: 10))
+                    .foregroundStyle(.secondary)
+            }
+
+            Spacer(minLength: 8)
+
+            Toggle("", isOn: Binding(
+                get: { state.touchIDEnabled },
+                set: { state.setTouchID($0) }
+            ))
+            .labelsHidden()
+            .toggleStyle(.switch)
+            .controlSize(.mini)
+        }
+        .contentGroup()
+    }
+
     // MARK: - Passwordless turn-off
 
-    private var passwordlessCard: some View {
+    private var passwordlessRow: some View {
         HStack(spacing: 10) {
             Image(systemName: state.passwordlessOff ? "lock.open.fill" : "lock.fill")
                 .font(.system(size: 11))
@@ -182,7 +225,7 @@ struct ContentView: View {
             .toggleStyle(.switch)
             .controlSize(.mini)
         }
-        .glassCard()
+        .contentGroup()
     }
 
     // MARK: - Footer
@@ -202,23 +245,28 @@ struct ContentView: View {
     }
 }
 
-// MARK: - Glass card
+// MARK: - Content group
 
-private struct GlassCard: ViewModifier {
+/// A grouped row on the glass pane. Deliberately *not* glass — stacking glass
+/// inside glass cancels out the refraction and leaves both layers looking flat.
+/// A faint scrim in the pane's own colour is enough to read as a group.
+private struct ContentGroup: ViewModifier {
     var tint: Color?
 
     func body(content: Content) -> some View {
-        let glass: Glass = tint.map { Glass.regular.tint($0) } ?? .regular
-        return content
+        content
             .padding(.horizontal, 12)
             .padding(.vertical, 11)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .glassEffect(glass, in: .rect(cornerRadius: 14))
+            .background(
+                (tint ?? Color.primary).opacity(tint == nil ? 0.05 : 0.16),
+                in: .rect(cornerRadius: 11, style: .continuous)
+            )
     }
 }
 
 private extension View {
-    func glassCard(tint: Color? = nil) -> some View { modifier(GlassCard(tint: tint)) }
+    func contentGroup(tint: Color? = nil) -> some View { modifier(ContentGroup(tint: tint)) }
 }
 
 // MARK: - Per-second labels

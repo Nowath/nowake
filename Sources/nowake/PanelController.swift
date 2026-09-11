@@ -41,20 +41,12 @@ final class PanelController {
         panel.hidesOnDeactivate = false
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
 
-        // The glass cards sample what's behind the window, so the panel needs a
-        // material of its own for the space between them to read as one surface.
-        let backdrop = NSVisualEffectView()
-        backdrop.material = .popover
-        backdrop.blendingMode = .behindWindow
-        backdrop.state = .active
-        backdrop.wantsLayer = true
-        backdrop.layer?.cornerRadius = 18
-        backdrop.layer?.cornerCurve = .continuous
-        backdrop.layer?.masksToBounds = true
-
+        // Deliberately no NSVisualEffectView. Its materials are the pre-26 frost,
+        // and glass layered over frost samples the frost instead of the desktop —
+        // the refraction cancels out and both layers read flat. ContentView's
+        // pane is the only surface, and it draws its own rounded corners.
         hosting.view.autoresizingMask = [.width, .height]
-        backdrop.addSubview(hosting.view)
-        panel.contentView = backdrop
+        panel.contentView = hosting.view
 
         // Pay SwiftUI's first layout now, not on the first click.
         hosting.view.layoutSubtreeIfNeeded()
