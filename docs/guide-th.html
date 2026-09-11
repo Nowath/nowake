@@ -1,0 +1,590 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+<title>คู่มือ nowake</title>
+<meta name="description" content="วิธีติดตั้งและใช้งาน nowake แอปบนแถบเมนูที่ทำให้ Mac ทำงานต่อได้แม้ปิดฝา">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --bg: #F3F4F8;
+    --surface: #FFFFFF;
+    --sunken: #E8EAF2;
+    --ink: #161A2B;
+    --muted: #5A6079;
+    --line: #DADDE8;
+    --accent: #3A48D4;
+    --accent-soft: #E3E6FB;
+    --ok: #1C8A4B;
+    --warn: #A95A06;
+    --warn-soft: #FBEEDD;
+    --code-bg: #1B1F33;
+    --code-ink: #E6E8F5;
+    --panel-glass: rgba(255,255,255,.78);
+    --panel-card: rgba(22,26,43,.05);
+
+    --f-display: "Bai Jamjuree", "Sukhumvit Set", "Thonburi", system-ui, sans-serif;
+    --f-body: "IBM Plex Sans Thai", "Sukhumvit Set", "Thonburi", system-ui, sans-serif;
+    --f-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0E1020;
+      --surface: #171A2D;
+      --sunken: #1F2338;
+      --ink: #E7E9F4;
+      --muted: #9AA0BD;
+      --line: #2A2F4A;
+      --accent: #8E9AFF;
+      --accent-soft: #252B55;
+      --ok: #4DC787;
+      --warn: #F0A24A;
+      --warn-soft: #33260F;
+      --code-bg: #090B17;
+      --code-ink: #E6E8F5;
+      --panel-glass: rgba(40,44,70,.82);
+      --panel-card: rgba(255,255,255,.06);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0E1020;
+    --surface: #171A2D;
+    --sunken: #1F2338;
+    --ink: #E7E9F4;
+    --muted: #9AA0BD;
+    --line: #2A2F4A;
+    --accent: #8E9AFF;
+    --accent-soft: #252B55;
+    --ok: #4DC787;
+    --warn: #F0A24A;
+    --warn-soft: #33260F;
+    --code-bg: #090B17;
+    --code-ink: #E6E8F5;
+    --panel-glass: rgba(40,44,70,.82);
+    --panel-card: rgba(255,255,255,.06);
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--f-body);
+    font-size: 16.5px;
+    line-height: 1.75;
+    padding-inline: 20px;
+    padding-block: 0 72px;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; }
+
+  h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; line-height: 1.3; margin: 0; }
+  h2 { font-size: 1.6rem; font-weight: 700; letter-spacing: -.005em; }
+  h3 { font-size: 1.12rem; font-weight: 600; }
+  p { margin: 0; }
+  a { color: var(--accent); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+
+  .label {
+    font-family: var(--f-body);
+    font-size: .8rem;
+    font-weight: 600;
+    color: var(--accent);
+  }
+  .specs .label { color: var(--muted); font-weight: 500; }
+
+  /* ---------- Menu bar strip ---------- */
+  .menubar {
+    margin-inline: -20px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 18px;
+    padding-inline: 20px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--line);
+    font-size: .8rem;
+    color: var(--muted);
+    font-family: var(--f-body);
+  }
+  .menubar .me {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 2px 8px; border-radius: 6px;
+    background: var(--accent-soft); color: var(--ink);
+  }
+  .menubar svg { width: 16px; height: 16px; }
+  .menubar .clock { font-variant-numeric: tabular-nums; }
+
+  /* ---------- Header ---------- */
+  header.top { padding-block: 56px 36px; display: grid; gap: 18px; }
+  header.top h1 {
+    font-size: clamp(2.6rem, 8vw, 3.8rem);
+    font-weight: 700;
+    letter-spacing: -.02em;
+    line-height: 1.05;
+  }
+  .lede { font-size: 1.15rem; color: var(--muted); max-width: 40ch; }
+  .lede strong { color: var(--ink); font-weight: 600; }
+
+  .specs {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    margin-top: 10px;
+  }
+  .specs > div { padding: 12px 14px 12px 0; display: grid; gap: 2px; }
+  .specs > div + div { padding-left: 14px; border-left: 1px solid var(--line); }
+  .specs b { font-family: var(--f-display); font-weight: 600; font-size: 1.02rem; }
+  @media (max-width: 600px) {
+    .specs { grid-template-columns: 1fr 1fr; }
+    .specs > div:nth-child(3) { padding-left: 0; border-left: 0; }
+    .specs > div:nth-child(n+3) { border-top: 1px solid var(--line); }
+  }
+
+  /* ---------- Sections ---------- */
+  main { display: grid; gap: 64px; }
+  section { display: grid; gap: 18px; }
+  section > header { display: grid; gap: 6px; }
+  .note { color: var(--muted); }
+
+  /* ---------- Steps ---------- */
+  ol.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; counter-reset: s; }
+  ol.steps > li {
+    counter-increment: s;
+    display: grid;
+    grid-template-columns: 44px 1fr;
+    gap: 4px 14px;
+    padding-block: 18px;
+    border-top: 1px solid var(--line);
+  }
+  ol.steps > li:last-child { border-bottom: 1px solid var(--line); }
+  ol.steps > li::before {
+    content: counter(s);
+    font-family: var(--f-display);
+    font-weight: 700;
+    font-size: 1.5rem;
+    line-height: 1.2;
+    color: var(--accent);
+    grid-row: span 2;
+  }
+  ol.steps .body { display: grid; gap: 10px; }
+  .path {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+    font-size: .92rem;
+  }
+  .path span {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    padding: 1px 10px;
+    border-radius: 6px;
+  }
+  .path i { font-style: normal; color: var(--muted); }
+  .path span.btn { background: var(--accent); border-color: var(--accent); color: var(--bg); font-weight: 600; }
+
+  /* ---------- Code ---------- */
+  .cmd {
+    background: var(--code-bg);
+    color: var(--code-ink);
+    border-radius: 10px;
+    font-family: var(--f-mono);
+    font-size: .88rem;
+    line-height: 1.6;
+    overflow-x: auto;
+  }
+  .cmd pre { margin: 0; padding: 14px 16px; white-space: pre; }
+  .cmd .ps { color: #8E9AFF; user-select: none; }
+  .cmd .cm { color: #8A90AE; }
+  code.in {
+    font-family: var(--f-mono);
+    font-size: .86em;
+    background: var(--sunken);
+    padding: 1px 6px;
+    border-radius: 5px;
+    overflow-wrap: anywhere;
+  }
+
+  /* ---------- Panel anatomy ---------- */
+  .anatomy {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 28px;
+    align-items: start;
+  }
+  @media (max-width: 680px) { .anatomy { grid-template-columns: 1fr; } }
+
+  .panel {
+    width: 100%;
+    max-width: 300px;
+    background: var(--panel-glass);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 12px;
+    display: grid;
+    gap: 9px;
+    box-shadow: 0 18px 40px -18px rgba(14,16,40,.35);
+    font-size: 12px;
+    line-height: 1.35;
+    font-family: -apple-system, "SF Pro Text", var(--f-body);
+  }
+  .p-head { display: flex; justify-content: space-between; align-items: center; padding-inline: 4px; }
+  .p-head b { font-size: 14px; }
+  .p-state { display: inline-flex; align-items: center; gap: 5px; color: var(--muted); font-size: 11px; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); }
+  .p-card {
+    background: var(--panel-card);
+    border-radius: 13px;
+    padding: 10px 11px;
+    display: grid;
+    gap: 8px;
+    position: relative;
+  }
+  .p-card.on { background: var(--accent-soft); }
+  .p-card.warn { background: var(--warn-soft); color: var(--warn); }
+  .row { display: flex; align-items: center; gap: 9px; }
+  .row .grow { flex: 1; min-width: 0; }
+  .row small { display: block; color: var(--muted); font-size: 10.5px; font-variant-numeric: tabular-nums; }
+  .sq {
+    width: 30px; height: 30px; border-radius: 8px;
+    background: var(--accent); display: grid; place-items: center; flex: none;
+  }
+  .sq svg { width: 15px; height: 15px; color: #fff; }
+  .sw {
+    width: 30px; height: 17px; border-radius: 99px; flex: none;
+    background: var(--line); position: relative;
+  }
+  .sw::after {
+    content: ""; position: absolute; top: 2px; left: 2px;
+    width: 13px; height: 13px; border-radius: 50%; background: #fff;
+    box-shadow: 0 1px 2px rgba(0,0,0,.25);
+  }
+  .sw.on { background: var(--ok); }
+  .sw.on::after { left: 15px; }
+  .pick {
+    font-size: 11px; padding: 1px 7px; border-radius: 6px;
+    background: var(--surface); border: 1px solid var(--line); flex: none;
+  }
+  .tnum { font-variant-numeric: tabular-nums; color: var(--muted); font-size: 11px; }
+  .kv { display: flex; justify-content: space-between; color: var(--muted); }
+  .kv b { color: var(--ink); font-weight: 500; font-variant-numeric: tabular-nums; }
+  .p-foot { display: flex; justify-content: space-between; align-items: center; padding-inline: 4px; color: var(--muted); font-size: 10px; }
+  .p-foot span.q { border: 1px solid var(--line); border-radius: 99px; padding: 1px 10px; color: var(--ink); font-size: 11px; background: var(--surface); }
+
+  .key {
+    position: absolute; right: -9px; top: -9px;
+    width: 20px; height: 20px; border-radius: 50%;
+    background: var(--ink); color: var(--bg);
+    font: 600 11px/20px var(--f-mono); text-align: center;
+  }
+  dl.legend { margin: 0; display: grid; gap: 14px; }
+  dl.legend > div { display: grid; grid-template-columns: 26px 1fr; gap: 2px 10px; }
+  dl.legend dt { font-family: var(--f-display); font-weight: 600; }
+  dl.legend > div::before {
+    content: attr(data-k);
+    grid-row: span 2;
+    width: 20px; height: 20px; border-radius: 50%; margin-top: 4px;
+    background: var(--ink); color: var(--bg);
+    font: 600 11px/20px var(--f-mono); text-align: center;
+  }
+  dl.legend dd { margin: 0; grid-column: 2; color: var(--muted); font-size: .95rem; }
+  dl.legend dd em { font-style: normal; color: var(--ink); font-family: var(--f-mono); font-size: .86em; }
+
+  /* ---------- Icon states ---------- */
+  .icons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .icons > div { background: var(--surface); padding: 16px 14px; display: grid; gap: 8px; align-content: start; }
+  .icons svg { width: 24px; height: 24px; color: var(--ink); }
+  .icons .alert svg { color: var(--warn); }
+  .icons b { font-family: var(--f-display); font-weight: 600; font-size: .98rem; }
+  .icons p { font-size: .86rem; color: var(--muted); line-height: 1.5; }
+  @media (max-width: 600px) { .icons { grid-template-columns: 1fr 1fr; } }
+
+  /* ---------- Callouts ---------- */
+  .caution {
+    background: var(--warn-soft);
+    border-radius: 12px;
+    padding: 18px 20px;
+    display: grid; gap: 8px;
+  }
+  .caution h3 { color: var(--warn); }
+  .caution ul { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
+
+  .sudoers {
+    border: 1px dashed var(--line);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-family: var(--f-mono);
+    font-size: .84rem;
+    background: var(--surface);
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  /* ---------- FAQ ---------- */
+  .faq { display: grid; gap: 0; }
+  .faq details { border-top: 1px solid var(--line); }
+  .faq details:last-child { border-bottom: 1px solid var(--line); }
+  .faq summary {
+    cursor: pointer; list-style: none;
+    padding-block: 14px;
+    font-family: var(--f-display); font-weight: 600; font-size: 1.04rem;
+    display: flex; justify-content: space-between; gap: 12px;
+  }
+  .faq summary::-webkit-details-marker { display: none; }
+  .faq summary::after { content: "+"; color: var(--muted); font-family: var(--f-mono); font-weight: 400; }
+  .faq details[open] summary::after { content: "–"; }
+  .faq .a { padding-bottom: 18px; display: grid; gap: 10px; color: var(--muted); }
+  .faq .a strong { color: var(--ink); font-weight: 500; }
+
+  footer.end {
+    margin-top: 64px; padding-top: 18px; border-top: 1px solid var(--line);
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+    color: var(--muted); font-size: .85rem;
+  }
+
+  @media (max-width: 480px) {
+    body { font-size: 16px; }
+    .menubar .extra { display: none; }
+  }
+  @media print {
+    .menubar { display: none; }
+    .faq details { break-inside: avoid; }
+    body { padding-block: 0; }
+  }
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="cup" viewBox="0 0 24 24"><path d="M4 8h13v5a6 6 0 0 1-6 6H10a6 6 0 0 1-6-6V8Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M17 10h1.5a2.5 2.5 0 0 1 0 5H16.5" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M2.5 21.5h17" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></symbol>
+    <symbol id="cup-fill" viewBox="0 0 24 24"><path d="M4 8h13v5a6 6 0 0 1-6 6H10a6 6 0 0 1-6-6V8Z" fill="currentColor"/><path d="M17 10h1.5a2.5 2.5 0 0 1 0 5H16.5" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M2.5 21.5h17" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></symbol>
+    <symbol id="lid" viewBox="0 0 24 24"><rect x="4.5" y="5" width="15" height="10.5" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M2 18.5h20" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M3 3l18 18" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></symbol>
+    <symbol id="tri" viewBox="0 0 24 24"><path d="M12 3 22 20.5H2L12 3Z" fill="currentColor"/><path d="M12 9.5v5" stroke="var(--surface)" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="17.4" r="1.15" fill="var(--surface)"/></symbol>
+  </defs>
+</svg>
+
+<div class="menubar" aria-hidden="true">
+  <span class="extra">Wi-Fi</span>
+  <span class="extra">100%</span>
+  <span class="me"><svg><use href="#cup-fill"/></svg> nowake</span>
+  <span class="clock">ศ. 11 ก.ย. 23:40</span>
+</div>
+
+<div class="wrap">
+
+  <header class="top">
+    <span class="label">คู่มือผู้ใช้ · เวอร์ชัน 1.0</span>
+    <h1>nowake</h1>
+    <p class="lede">ปิดฝาแล้ว <strong>Mac ยังทำงานต่อ</strong> — เหมาะกับตอนต่อจอนอก, โหลดไฟล์ใหญ่ทิ้งไว้ หรือรันงานยาว ๆ แล้วไม่อยากเปิดฝาทิ้งไว้</p>
+    <div class="specs">
+      <div><span class="label">ระบบ</span><b>macOS 26+</b></div>
+      <div><span class="label">ชิป</span><b>Apple Silicon / Intel</b></div>
+      <div><span class="label">ขนาด</span><b>≈ 0.8 MB</b></div>
+      <div><span class="label">อยู่ที่</span><b>แถบเมนู</b></div>
+    </div>
+  </header>
+
+  <main>
+
+    <section id="install">
+      <header>
+        <span class="label">ติดตั้ง</span>
+        <h2>ติดตั้งครั้งแรก</h2>
+        <p class="note">ใช้เวลาไม่ถึงนาที ขั้นตอนที่ 3 ทำแค่ครั้งแรกครั้งเดียว</p>
+      </header>
+      <ol class="steps">
+        <li>
+          <h3>เปิดไฟล์ nowake-1.0.dmg</h3>
+          <div class="body"><p>ดับเบิลคลิกไฟล์ที่ได้รับมา จะมีหน้าต่างเปิดขึ้นมา ข้างในมี <code class="in">nowake.app</code>, ทางลัดโฟลเดอร์ Applications และคู่มือนี้</p></div>
+        </li>
+        <li>
+          <h3>ลาก nowake ไปใส่ Applications</h3>
+          <div class="body"><p>ลากไอคอน nowake ไปวางทับโฟลเดอร์ Applications ในหน้าต่างเดียวกัน เสร็จแล้วกดปุ่มดีดออก (⏏) ที่ดิสก์ nowake ใน Finder ได้เลย</p></div>
+        </li>
+        <li>
+          <h3>อนุญาตให้เปิดแอป</h3>
+          <div class="body">
+            <p>ครั้งแรกที่เปิด macOS จะขึ้นว่า <em>“ไม่สามารถเปิด nowake ได้”</em> เพราะแอปไม่ได้เซ็นด้วยบัญชีนักพัฒนาของ Apple ที่ต้องเสียเงินรายปี ไม่ใช่เพราะแอปมีปัญหา ให้กด <b>Done</b> แล้วไปที่</p>
+            <div class="path">
+              <span>System Settings</span><i>›</i><span>Privacy &amp; Security</span><i>›</i><span class="btn">Open Anyway</span>
+            </div>
+            <p>เลื่อนลงไปจนเจอข้อความเรื่อง nowake กด <b>Open Anyway</b> แล้วใส่รหัสผ่านเครื่องยืนยัน บน macOS รุ่นใหม่ การคลิกขวาแล้วเลือก Open ใช้แทนขั้นตอนนี้ไม่ได้แล้ว</p>
+            <p class="note">หรือถ้าถนัด Terminal ใช้คำสั่งเดียวแทนทั้งขั้นตอนได้:</p>
+            <div class="cmd"><pre><span class="ps">$ </span>xattr -dr com.apple.quarantine /Applications/nowake.app</pre></div>
+          </div>
+        </li>
+        <li>
+          <h3>หาไอคอนถ้วยกาแฟบนแถบเมนู</h3>
+          <div class="body"><p>nowake ไม่มีหน้าต่างและไม่ขึ้นใน Dock มันจะอยู่เป็นไอคอนถ้วยกาแฟที่มุมขวาบนของจอ คลิกที่ไอคอนเพื่อเปิดหน้าต่างควบคุม</p></div>
+        </li>
+      </ol>
+    </section>
+
+    <section id="panel">
+      <header>
+        <span class="label">หน้าต่างควบคุม</span>
+        <h2>คลิกถ้วยกาแฟ แล้วจะเจออะไรบ้าง</h2>
+      </header>
+      <div class="anatomy">
+        <div class="panel" role="img" aria-label="ตัวอย่างหน้าต่างควบคุมของ nowake ขณะเปิดโหมดอยู่">
+          <div class="p-head"><b>nowake</b><span class="p-state"><span class="dot"></span>Active</span></div>
+          <div class="p-card on">
+            <span class="key">1</span>
+            <div class="row">
+              <span class="sq"><svg><use href="#cup-fill"/></svg></span>
+              <div class="grow">Keep awake<small>Active for 1h 12m</small></div>
+              <span class="sw on"></span>
+            </div>
+          </div>
+          <div class="p-card">
+            <span class="key">2</span>
+            <div class="row"><span class="grow">Auto-off <span class="tnum">47m 58s left</span></span><span class="pick">2 hours ⌄</span></div>
+            <div class="row"><span class="grow">Turn off below</span><span class="pick">20% ⌄</span></div>
+          </div>
+          <div class="p-card">
+            <span class="key">3</span>
+            <div class="kv"><span>Lid</span><b>Closed</b></div>
+            <div class="kv"><span>Power</span><b>On battery 64%</b></div>
+          </div>
+          <div class="p-card">
+            <span class="key">4</span>
+            <div class="row">
+              <div class="grow">Turn off without password<small>Asks for your password to turn off</small></div>
+              <span class="sw"></span>
+            </div>
+          </div>
+          <div class="p-foot"><span>v1.0</span><span class="q">Quit</span></div>
+        </div>
+
+        <dl class="legend">
+          <div data-k="1">
+            <dt>Keep awake — สวิตช์หลัก</dt>
+            <dd>เปิดแล้วปิดฝาเครื่องจะไม่หลับ ตอนเปิดจะถามรหัสผ่านเครื่องทุกครั้ง ใต้ชื่อบอกว่าเปิดมานานเท่าไหร่แล้ว ถ้ากดเปิดตอนไม่ได้เสียบสายชาร์จ แอปจะเตือนก่อนหนึ่งครั้ง</dd>
+          </div>
+          <div data-k="2">
+            <dt>ปิดโหมดอัตโนมัติ</dt>
+            <dd><b>Auto-off</b> ตั้งเวลาให้ปิดเอง เลือกได้ <em>30 นาที · 1 · 2 · 4 ชม.</em> พร้อมนับถอยหลัง<br><b>Turn off below</b> ปิดเองเมื่อแบตลดลงถึง <em>10–70%</em> (ใช้ได้เฉพาะเครื่องที่มีแบต) ตั้งได้ตอนโหมดเปิดอยู่ และแอปจำค่าไว้ให้ครั้งหน้า</dd>
+          </div>
+          <div data-k="3">
+            <dt>สถานะเครื่อง</dt>
+            <dd>ฝาเปิดหรือปิด และไฟมาจากไหน — ชาร์จอยู่, เสียบสาย หรือใช้แบตกี่เปอร์เซ็นต์</dd>
+          </div>
+          <div data-k="4">
+            <dt>ปิดโหมดโดยไม่ต้องใส่รหัส</dt>
+            <dd>ไม่บังคับ แต่ถ้าจะใช้ข้อ 2 ตอนไม่อยู่หน้าเครื่อง ควรเปิดไว้ อ่านรายละเอียดใน<a href="#password">หัวข้อรหัสผ่าน</a></dd>
+          </div>
+        </dl>
+      </div>
+    </section>
+
+    <section id="icons">
+      <header>
+        <span class="label">ไอคอนบนแถบเมนู</span>
+        <h2>ดูไอคอนก็รู้สถานะ</h2>
+      </header>
+      <div class="icons">
+        <div><svg><use href="#cup"/></svg><b>ถ้วยโปร่ง</b><p>ปิดโหมด เครื่องหลับตามปกติ</p></div>
+        <div><svg><use href="#cup-fill"/></svg><b>ถ้วยทึบ</b><p>เปิดโหมด ฝายังเปิดอยู่</p></div>
+        <div><svg><use href="#lid"/></svg><b>โน้ตบุ๊กขีดฆ่า</b><p>เปิดโหมด และปิดฝาอยู่</p></div>
+        <div class="alert"><svg><use href="#tri"/></svg><b>สามเหลี่ยมเตือน</b><p>เปิดโหมดอยู่ แต่แบตเหลือต่ำ</p></div>
+      </div>
+      <p class="note">ถ้าเปิดโหมดทิ้งไว้ตอนใช้แบต แอปจะเด้งเตือนที่ <b>20%</b> และเตือนแรงขึ้นที่ <b>10%</b> พร้อมปุ่มให้ปิดโหมดทันที</p>
+    </section>
+
+    <section id="password">
+      <header>
+        <span class="label">รหัสผ่าน</span>
+        <h2>ทำไมถึงถามรหัสผ่าน</h2>
+      </header>
+      <p>การสั่งไม่ให้ Mac หลับตอนปิดฝาเป็นการตั้งค่าระดับระบบ ต้องใช้สิทธิ์ผู้ดูแลเครื่อง nowake ใช้คำสั่ง <code class="in">pmset</code> ที่มากับ macOS อยู่แล้ว ไม่ได้ติดตั้งอะไรแปลก ๆ เพิ่มลงในเครื่อง ส่วนคำสั่ง <code class="in">caffeinate</code> ทั่วไปใช้แทนไม่ได้ เพราะมันกันได้แค่เครื่องหลับตอนไม่มีคนใช้ ปิดฝาเมื่อไหร่เครื่องก็หลับอยู่ดี</p>
+      <p><b>ตอนเปิดโหมด</b> จะถามรหัสผ่านทุกครั้ง ข้อนี้ปิดไม่ได้ เพราะเป็นการปิดระบบป้องกันของเครื่อง</p>
+      <p><b>ตอนปิดโหมด</b> เลือกได้ว่าไม่ต้องถามก็ได้ ถ้าเปิดสวิตช์ <em>Turn off without password</em> แอปจะแสดงให้ดูก่อนว่าจะเขียนบรรทัดนี้หนึ่งบรรทัดลงในไฟล์ <code class="in">/etc/sudoers.d/nowake</code></p>
+      <div class="sudoers">ชื่อผู้ใช้ของคุณ ALL=(root) NOPASSWD: /usr/bin/pmset -a disablesleep 0</div>
+      <p>บรรทัดนี้อนุญาตให้รันได้แค่คำสั่งเดียว คือคำสั่งที่คืนค่าให้เครื่องกลับมาหลับตามปกติ ไม่มีสิทธิ์อื่นเพิ่มเลย และแอปจะให้ <code class="in">visudo</code> ตรวจไฟล์ก่อนติดตั้งทุกครั้ง ถ้าไม่เปิดสวิตช์นี้ ตัวตั้งเวลาและตัวตัดตอนแบตต่ำจะทำได้แค่เด้งหน้าต่างถามรหัสแล้วรอ ซึ่งไม่มีประโยชน์ตอนที่คุณไม่อยู่หน้าเครื่อง</p>
+      <p class="note">อยากเอาออก ก็ปิดสวิตช์เดิม หรือพิมพ์ใน Terminal:</p>
+      <div class="cmd"><pre><span class="ps">$ </span>sudo rm /etc/sudoers.d/nowake</pre></div>
+    </section>
+
+    <section id="caution">
+      <div class="caution">
+        <h3>อย่าใส่กระเป๋าตอนเปิดโหมดนี้</h3>
+        <ul>
+          <li>Mac ที่ทำงานอยู่ทั้งที่ปิดฝาระบายความร้อนผ่านคีย์บอร์ดไม่ได้ ถ้าอยู่ในกระเป๋าหรือใต้ผ้าห่ม เครื่องจะร้อนมาก</li>
+          <li>ถ้าใช้แบตอยู่ แบตจะลดลงเรื่อย ๆ ถ้าแบตหมดตอนปิดฝา งานที่ยังไม่ได้เซฟอาจหายได้ ควรตั้ง <b>Turn off below</b> ไว้</li>
+          <li>ปิดโหมดทุกครั้งเมื่อเลิกใช้ การกด <b>Quit</b> ในหน้าต่างควบคุมจะปิดโหมดให้ก่อนออกจากแอป</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="faq">
+      <header>
+        <span class="label">แก้ปัญหา</span>
+        <h2>คำถามที่เจอบ่อย</h2>
+      </header>
+      <div class="faq">
+        <details>
+          <summary>เปิดแอปแล้วไม่เห็นไอคอนบนแถบเมนู</summary>
+          <div class="a">
+            <p>แถบเมนูน่าจะเต็ม โดยเฉพาะเครื่องที่มีรอยบากกลางจอ ไอคอนที่ล้นจะไปซ่อนอยู่หลังรอยบาก ลองปิดแอปอื่นบนแถบเมนูสักตัว หรือกด <strong>⌘</strong> ค้างแล้วลากไอคอนอื่นออกเพื่อให้มีที่ว่าง</p>
+          </div>
+        </details>
+        <details>
+          <summary>ปิดแอปไปแล้ว แต่ปิดฝาเครื่องก็ยังไม่หลับ</summary>
+          <div class="a">
+            <p>เกิดได้ถ้าแอปถูกบังคับปิด (Force Quit) หรือเครื่องดับกลางคันตอนโหมดยังเปิดอยู่ ค่าที่ตั้งไว้เลยค้างอยู่ในระบบ วิธีแก้ง่ายสุดคือ<strong>เปิด nowake แล้วกดปิดสวิตช์</strong> หรือพิมพ์ใน Terminal:</p>
+            <div class="cmd"><pre><span class="ps">$ </span>sudo pmset -a disablesleep 0</pre></div>
+            <p>เช็คสถานะได้ด้วยคำสั่งนี้ ถ้าขึ้น <strong>No</strong> แปลว่าเครื่องกลับมาหลับตามปกติแล้ว</p>
+            <div class="cmd"><pre><span class="ps">$ </span>ioreg -r -n IOPMrootDomain -d 1 | grep SleepDisabled
+<span class="cm">      "SleepDisabled" = No</span></pre></div>
+          </div>
+        </details>
+        <details>
+          <summary>กดเปิดโหมดแล้วไม่มีอะไรเกิดขึ้น</summary>
+          <div class="a">
+            <p>ถ้ากด Cancel ที่หน้าต่างถามรหัสผ่าน แอปจะไม่เปลี่ยนอะไรเลย ลองกดใหม่แล้วใส่รหัสผ่านเครื่อง บัญชีที่ใช้ต้องเป็นบัญชีผู้ดูแลระบบ (Admin) ด้วย</p>
+          </div>
+        </details>
+        <details>
+          <summary>อยากให้เปิดเองตอนเปิดเครื่อง</summary>
+          <div class="a">
+            <p>ไปที่ <strong>System Settings › General › Login Items &amp; Extensions</strong> กดปุ่ม + ใต้ “Open at Login” แล้วเลือก nowake จาก Applications การเปิดแอปเฉย ๆ ไม่ได้เปิดโหมดให้เอง ต้องกดสวิตช์เองทุกครั้ง</p>
+          </div>
+        </details>
+        <details>
+          <summary>เปิดไฟล์แล้วขึ้นว่าต้องใช้ macOS รุ่นใหม่กว่านี้</summary>
+          <div class="a">
+            <p>nowake ใช้หน้าตาแบบ Liquid Glass ที่มีตั้งแต่ macOS 26 ขึ้นไป เช็ครุ่นได้ที่ <strong>เมนู  › About This Mac</strong></p>
+          </div>
+        </details>
+        <details>
+          <summary>ลบแอปออกยังไง</summary>
+          <div class="a">
+            <p>กด <strong>Quit</strong> ในหน้าต่างควบคุมก่อน (แอปจะปิดโหมดให้) แล้วลาก nowake จาก Applications ไปถังขยะ ถ้าเคยเปิดสวิตช์ Turn off without password ไว้ ให้ลบไฟล์นั้นด้วย:</p>
+            <div class="cmd"><pre><span class="ps">$ </span>sudo rm /etc/sudoers.d/nowake</pre></div>
+          </div>
+        </details>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="end">
+    <span>nowake 1.0</span>
+    <span>คำสั่งที่ใช้เบื้องหลัง: <code class="in">pmset -a disablesleep</code></span>
+  </footer>
+</div>
+
+</body>
+</html>

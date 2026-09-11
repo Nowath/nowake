@@ -2,6 +2,21 @@
 
 A macOS menu bar app that keeps your Mac running with the lid closed.
 
+## Install
+
+Requires macOS 26 or later. Runs natively on Apple Silicon and Intel.
+
+1. Download `nowake-1.0.dmg` from [Releases](../../releases/latest).
+2. Open it and drag `nowake.app` into Applications.
+3. The app is ad-hoc signed, not notarized, so the first launch is blocked. Go to
+   **System Settings › Privacy & Security** and click **Open Anyway**. Or:
+
+   ```
+   xattr -dr com.apple.quarantine /Applications/nowake.app
+   ```
+
+คู่มือภาษาไทย: [docs/guide-th.pdf](docs/guide-th.pdf)
+
 ## How it works
 
 `pmset -a disablesleep 1` is the official power-management flag, and the only
@@ -21,7 +36,7 @@ Click the menu bar icon for a SwiftUI popover:
 
 - A switch for the mode itself, with elapsed time once it's on
 - **Auto-off** — turn off automatically after 30 min / 1 / 2 / 4 hours, with a live countdown
-- **Turn off below** — turn off automatically when the battery drops to 10 / 15 / 20 / 30%
+- **Turn off below** — turn off automatically when the battery drops to a level between 10% and 70%
 - Live lid and power readouts
 - **Passwordless turn-off** — see below
 
