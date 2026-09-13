@@ -92,6 +92,12 @@ final class AppState: ObservableObject {
     /// Whether the sudoers rule that lets turn-off skip the prompt is present.
     @Published private(set) var passwordlessOff = false
 
+    /// Whether sudo is wired to accept a fingerprint, and whether this Mac has
+    /// one to offer. The hardware answer can't change while the app runs, so it
+    /// is read once rather than on every probe.
+    @Published private(set) var touchIDEnabled = false
+    let touchIDAvailable = TouchID.isAvailable
+
     /// Per-second labels live on their own object so ticking them doesn't
     /// invalidate the whole panel. See Ticker.
     let ticker = Ticker()
@@ -156,9 +162,12 @@ final class AppState: ObservableObject {
     func refreshPrivilegeStatus() {
         probeQueue.async { [weak self] in
             let installed = SudoersRule.isInstalled
+            let touchID = TouchID.isEnabledForSudo
             DispatchQueue.main.async {
-                guard let self, self.passwordlessOff != installed else { return }
+                guard let self else { return }
+                guard self.passwordlessOff != installed || self.touchIDEnabled != touchID else { return }
                 self.passwordlessOff = installed
+                self.touchIDEnabled = touchID
                 self.onStateChange?()
             }
         }
@@ -180,6 +189,25 @@ final class AppState: ObservableObject {
         refreshPrivilegeStatus()
         // A declined prompt changes nothing, so the change-guarded publishing
         // stays silent — nudge SwiftUI to re-read the switch binding.
+        objectWillChange.send()
+    }
+
+    func setTouchID(_ enabled: Bool) {
+        do {
+            if enabled {
+                guard Alerts.confirmEnableTouchID() else { return }
+                try TouchID.enable()
+            } else {
+                try TouchID.disable()
+            }
+        } catch TouchIDError.blockedByPrivacy {
+            Alerts.touchIDBlocked()
+        } catch SleepBlockerError.cancelled {
+            // Prompt dismissed; leave things exactly as they were.
+        } catch {
+            Alerts.present(error)
+        }
+        refreshPrivilegeStatus()
         objectWillChange.send()
     }
 

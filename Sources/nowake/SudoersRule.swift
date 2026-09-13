@@ -44,14 +44,14 @@ enum SudoersRule {
 
         // A malformed sudoers file can lock the user out of sudo entirely, so
         // validate first; `&&` keeps install from running if visudo objects.
-        try SleepBlocker.runPrivileged(
+        try SleepBlocker.authorize(
             "/usr/sbin/visudo -cf '\(temporary.path)' "
             + "&& /usr/bin/install -m 0440 -o root -g wheel '\(temporary.path)' \(path)"
         )
     }
 
     static func remove() throws {
-        try SleepBlocker.runPrivileged("/bin/rm -f \(path)")
+        try SleepBlocker.authorize("/bin/rm -f \(path)")
     }
 }
 

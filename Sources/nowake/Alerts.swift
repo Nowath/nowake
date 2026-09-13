@@ -88,7 +88,7 @@ enum Alerts {
                 \(SudoersRule.grantDescription)
 
                 That grants exactly one command as root — the one that restores macOS's \
-                default sleep behaviour. Turning nowake on will still ask for your password.
+                default sleep behaviour. Turning nowake on will still ask you to authorize.
 
                 Without this, the auto-off timer and the battery cutoff can only raise a \
                 dialog and wait for you to come back.
@@ -96,6 +96,49 @@ enum Alerts {
             primary: "Install Rule",
             secondary: "Cancel"
         )
+    }
+
+    /// - Returns: `true` if the user consents to enabling Touch ID for sudo.
+    static func confirmEnableTouchID() -> Bool {
+        run(
+            style: .informational,
+            title: "Use Touch ID instead of typing your password?",
+            body: """
+                This writes \(TouchID.pamPath):
+
+                \(TouchID.pamLine)
+
+                /etc/pam.d/sudo already includes that file, so sudo starts accepting your \
+                fingerprint everywhere — in nowake and in Terminal alike. Authorization is \
+                still required every single time; it just stops being a typed password.
+
+                Writing the file needs your password once, now.
+                """,
+            primary: "Enable Touch ID",
+            secondary: "Cancel"
+        )
+    }
+
+    /// The one failure the user can still fix themselves, so it hands over the
+    /// fix rather than only reporting the refusal.
+    static func touchIDBlocked() {
+        let alert = NSAlert()
+        alert.alertStyle = .warning
+        alert.messageText = "macOS won't let nowake write PAM configuration"
+        alert.informativeText = """
+            Editing PAM configuration is gated behind Full Disk Access, which nowake \
+            deliberately doesn't ask for — being root isn't enough on its own.
+
+            Run these two lines in Terminal, then flip the switch again:
+
+            \(TouchID.terminalCommands)
+            """
+        alert.addButton(withTitle: "Copy Commands")
+        alert.addButton(withTitle: "OK")
+        NSApp.activate(ignoringOtherApps: true)
+        guard alert.runModal() == .alertFirstButtonReturn else { return }
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(TouchID.terminalCommands, forType: .string)
     }
 
     static func autoOffDeclined() {
@@ -135,6 +178,8 @@ enum Alerts {
             detail = message
         case SleepBlockerError.didNotApply:
             detail = "pmset ran, but the system didn't report the new state."
+        case let localized as LocalizedError where localized.errorDescription != nil:
+            detail = localized.errorDescription!
         default:
             detail = String(describing: error)
         }

@@ -35,18 +35,38 @@ enum SleepBlocker {
     @discardableResult
     static func setSleepDisabled(_ disabled: Bool) throws -> Bool {
 
-        // Turning the mode ON disables a safety mechanism, so it always asks for
-        // a password. Turning it OFF only restores the system default, so the
-        // optional sudoers rule may let it through silently — that is what lets
-        // the timer and the battery cutoff fire with nobody at the keyboard.
+        // Turning the mode ON disables a safety mechanism, so it always
+        // authorizes — a fingerprint if Touch ID is set up, a password if not.
+        // Turning it OFF only restores the system default, so the optional
+        // sudoers rule may let it through silently — that is what lets the
+        // timer and the battery cutoff fire with nobody at the keyboard.
         if disabled {
-            try runPrivileged("/usr/bin/pmset -a disablesleep 1")
+            try authorize("/usr/bin/pmset -a disablesleep 1")
         } else if Shell.run("/usr/bin/sudo", ["-n", "/usr/bin/pmset", "-a", "disablesleep", "0"]) != 0 {
-            try runPrivileged("/usr/bin/pmset -a disablesleep 0")
+            try authorize("/usr/bin/pmset -a disablesleep 0")
         }
         let applied = isSleepDisabled
         guard applied == disabled else { throw SleepBlockerError.didNotApply }
         return applied
+    }
+
+    /// Runs a command as root, taking the Touch ID path when one exists.
+    ///
+    /// `pam_tid.so` draws its own system prompt, so plain `sudo` authenticates
+    /// with no terminal attached. Without that module sudo has no way to ask —
+    /// there is no tty here and stdin is /dev/null — so it fails immediately
+    /// and costs nothing before the AppleScript dialog takes over.
+    ///
+    /// A cancelled fingerprint lands in the same fallback as a failed one: the
+    /// password dialog still appears. Distinguishing the two would mean parsing
+    /// sudo's stderr, and guessing wrong would strand the caller with no way to
+    /// authorize at all.
+    static func authorize(_ command: String) throws {
+        if TouchID.isEnabledForSudo,
+           Shell.run("/usr/bin/sudo", ["/bin/sh", "-c", command]) == 0 {
+            return
+        }
+        try runPrivileged(command)
     }
 
     static func runPrivileged(_ command: String) throws {

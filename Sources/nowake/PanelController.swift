@@ -15,6 +15,9 @@ final class PanelController {
     /// Minimum distance to keep from the left and right screen edges.
     private static let screenMargin: CGFloat = 8
 
+    /// Black laid over the blur. See the wash in `init`.
+    private static let wash: CGFloat = 0.04
+
     private let panel: NSPanel
     private let hosting: NSHostingController<ContentView>
 
@@ -41,20 +44,33 @@ final class PanelController {
         panel.hidesOnDeactivate = false
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
 
-        // The glass cards sample what's behind the window, so the panel needs a
-        // material of its own for the space between them to read as one surface.
+        // The surface is a system material drawn by the window server, which is
+        // what gives it real behind-window sampling. SwiftUI's `.glassEffect` is
+        // not a substitute in a borderless panel: it only samples within the
+        // window, so with nothing behind it to refract it renders flat however
+        // it is tinted.
         let backdrop = NSVisualEffectView()
         backdrop.material = .popover
         backdrop.blendingMode = .behindWindow
         backdrop.state = .active
         backdrop.wantsLayer = true
-        backdrop.layer?.cornerRadius = 18
+        backdrop.layer?.cornerRadius = 16
         backdrop.layer?.cornerCurve = .continuous
         backdrop.layer?.masksToBounds = true
+        panel.contentView = backdrop
 
+        // `.popover` on its own sits a touch brighter than it should against a
+        // dark desktop, so the blur gets a thin dark wash. This is the one number
+        // worth tuning by eye; the material choice is not.
+        let wash = NSView(frame: backdrop.bounds)
+        wash.wantsLayer = true
+        wash.layer?.backgroundColor = NSColor.black.withAlphaComponent(Self.wash).cgColor
+        wash.autoresizingMask = [.width, .height]
+        backdrop.addSubview(wash)
+
+        hosting.view.frame = backdrop.bounds
         hosting.view.autoresizingMask = [.width, .height]
         backdrop.addSubview(hosting.view)
-        panel.contentView = backdrop
 
         // Pay SwiftUI's first layout now, not on the first click.
         hosting.view.layoutSubtreeIfNeeded()
